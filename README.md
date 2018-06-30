@@ -12,7 +12,7 @@ Windows operating system (More coming later)
 You can find the latest download on the releases tab of this page. Don't forget that you require
 the necessary Microsoft Visual C++ redistributable.
 
-[Microsoft download page](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads)
+[Microsoft download page](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads)  
 [Direct link for x86 C++ redistributable](https://aka.ms/vs/15/release/vc_redist.x86.exe)
 
 ## Dependancies
