@@ -71,6 +71,7 @@ std::string File::Name() const {
 }
 
 File File::Parent() const {
+	using namespace std::string_literals;
 	size_t path_length = path_string.length();
 	int new_path_ending = -1;
 	for (int i = path_length-1; i >= 0; i--) {
@@ -103,7 +104,7 @@ uint64_t File::ChildrenSize() const {
 		return file_size;
 	}
 	catch (std::exception &ex) {
-		return -1;
+		return 0;
 	}
 }
 
