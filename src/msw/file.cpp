@@ -109,6 +109,7 @@ uint64_t File::ChildrenSize() const {
 }
 
 uint64_t File::Size() const {
+	return 1;
 	if (IsDirectory()) {
 		throw std::logic_error("Cannot get the file size of a directory. Directories contain multiple files.");
 	}

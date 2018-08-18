@@ -14,6 +14,13 @@ private:
 
 public:
 	File(std::string path) {
+		if (path.length() == 2)
+		{
+			if (path[1] == ':')
+			{
+				path = path + "/";
+			}
+		}
 		path_string = path;
 		ConvertToAbsolutePath();
 	}

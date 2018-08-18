@@ -87,7 +87,7 @@ int SsdFinderWindow::LoadListings() {
 			}
 		}
 		catch (std::exception &ex) {
-			size_string = std::string("-1");
+			size_string = std::string("0");
 		}
 		std::string name = child.Name();
 		index = list_file_listings->InsertItem(index, wxString(name.c_str()), 0);
