@@ -5,6 +5,9 @@
 #include <stdexcept>
 #include <cstdint>
 #include <cstddef>
+#include <future>
+#include <thread>
+#include <queue>
 #include "../file.hpp"
 
 #define FULL_PATH_MAX_LENGTH 4096
@@ -109,7 +112,6 @@ uint64_t File::ChildrenSize() const {
 }
 
 uint64_t File::Size() const {
-	return 1;
 	if (IsDirectory()) {
 		throw std::logic_error("Cannot get the file size of a directory. Directories contain multiple files.");
 	}
@@ -127,6 +129,28 @@ uint64_t File::Size() const {
 		throw std::runtime_error("Unable to get file size");
 	}
 	return size;
+}
+
+std::vector<File> File::AllDescendants() const {
+	if (IsFile()) {
+		return std::vector<File>();
+	}
+	std::queue<File> search_queue;
+	for (File &file : Children()) {
+		search_queue.push(file);
+	}
+	std::vector<File> all_files;
+	while (!search_queue.empty()) {
+		File front = search_queue.front();
+		if (front.IsDirectory()) {
+			for (File &child : front.Children()) {
+				search_queue.push(child);
+			}
+		}
+		all_files.push_back(front);
+		search_queue.pop();
+	}
+	return all_files;
 }
 
 std::vector<File> File::Children() const {
@@ -158,4 +182,57 @@ bool File::IsDirectory() const {
 
 bool File::IsFile() const {
 	return !IsDirectory();
+}
+
+// CONCURRENT FILE SIZE 
+
+typedef std::shared_ptr<std::future<uint64_t>> FuturePtr;
+
+static uint64_t FastFileSizeProcedure(std::vector<File> files, int start, int finish) {
+	if (finish > files.size()) {
+		throw std::invalid_argument("Finish is out of range");
+	}
+	if (start < 0) {
+		throw std::invalid_argument("Start is out of range");
+	}
+	uint64_t size = 0;
+	for (int i = start; i < finish; i++) {
+		if (files[i].IsFile()) {
+			size += files[i].Size();
+		}
+	}
+	return size;
+}
+
+static FuturePtr FastFileSizeThread(std::vector<File> files, int start, int finish) {
+	FuturePtr ptr = std::make_shared<std::future<uint64_t>>(std::async(std::launch::async, [=] {
+		return FastFileSizeProcedure(files, start, finish);
+	}));
+	return ptr;
+}
+
+uint64_t File::ConcurrentDescendantSize() {
+	if (IsFile()) {
+		return Size();
+	}
+	std::vector<FuturePtr> futures;
+	std::vector<File> descendants = AllDescendants();
+	unsigned int thread_count = std::thread::hardware_concurrency();
+	unsigned int work_per_thread = descendants.size() / thread_count;
+	if (descendants.size() <= thread_count) {
+		return ChildrenSize();
+	}
+	uint64_t total_size = 0;
+	for (int i = 0; i < thread_count; i++) {
+		if (i == thread_count - 1) {
+			total_size += FastFileSizeProcedure(descendants, i*work_per_thread, descendants.size());
+		}
+		else {
+			futures.push_back(FastFileSizeThread(descendants, i*work_per_thread, i*work_per_thread + work_per_thread));
+		}
+	}
+	for (FuturePtr future : futures) {
+		total_size += future->get();
+	}
+	return total_size;
 }

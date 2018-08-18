@@ -31,6 +31,18 @@ public:
 	bool IsDirectory() const;
 
 	/**
+	 * Gets all of the descendant files of this directory. Returns
+	 * an empty vector in the case of being a file. Caches result.
+	 */
+	std::vector<File> AllDescendants() const;
+
+	/**
+	 * Uses multiple threads to find the size of this folder and all of its descendants.
+	 * Returns the same thing as Size() in the case this is not a directory.
+	 */
+	uint64_t ConcurrentDescendantSize();
+
+	/**
 	 * Returns true if the file is not a directory
 	 */
 	bool IsFile() const;

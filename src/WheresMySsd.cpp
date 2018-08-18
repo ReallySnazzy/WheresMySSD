@@ -1,6 +1,9 @@
 #include "WheresMySsd.hpp"
 #include <cstdlib>
 #include <cmath>
+#include <cstdint>
+#include <thread>
+#include <future>
 #include <wx/msgdlg.h>
 
 IMPLEMENT_APP(WheresMySsd)
@@ -79,12 +82,7 @@ int SsdFinderWindow::LoadListings() {
 	for (File &child : current_directory.Children()) {
 		std::string size_string;
 		try {
-			if (child.IsDirectory()) {
-				size_string = std::to_string(child.ChildrenSize());
-			}
-			else {
-				size_string = std::to_string(child.Size());
-			}
+			size_string = std::to_string(child.ConcurrentDescendantSize());
 		}
 		catch (std::exception &ex) {
 			size_string = std::string("0");

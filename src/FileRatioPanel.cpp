@@ -27,14 +27,9 @@ void FileRatioPanel::StoreFileSizes() {
 	total_directory_size = 0;
 	file_sizes.clear();
 	for (File &child : file.Children()) {
-		int size = -1;
+		int size = 0;
 		try {
-			if (child.IsDirectory()) {
-				size = child.ChildrenSize();
-			}
-			else {
-				size = child.Size();
-			}
+			size = child.ConcurrentDescendantSize();
 		}
 		catch (std::exception &ex) {}
 		if (size > 0) {
